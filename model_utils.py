@@ -20,8 +20,10 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # ── Path file model yang disimpan ──────────────────────────
-MODEL_PATH   = "saved_model.pkl"
-METRICS_PATH = "saved_metrics.pkl"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH   = os.path.join(BASE_DIR, "saved_model.pkl")
+METRICS_PATH = os.path.join(BASE_DIR, "saved_metrics.pkl")
 
 
 # ============================================================
