@@ -70,10 +70,15 @@ if "model" not in st.session_state:
     st.session_state.model   = None
     st.session_state.metrics = None
 
-if st.session_state.model is None and model_exists():
+if st.session_state.model is None:
     model, metrics = load_model()
-    st.session_state.model   = model
-    st.session_state.metrics = metrics
+
+    if model is not None:
+        st.session_state.model = model
+        st.session_state.metrics = metrics
+    else:
+        st.error("❌ Model tidak ditemukan!.")
+        st.stop()
 
 
 # ── Header ───────────────────────────────────────────────────
@@ -103,47 +108,47 @@ with st.sidebar:
         "(0 = non-clickbait, 1 = clickbait)."
     )
 
-    uploaded_file = st.file_uploader(
-        "Pilih file dataset CSV",
-        type=["csv"],
-        label_visibility="collapsed"
-    )
+    # uploaded_file = st.file_uploader(
+    #     "Pilih file dataset CSV",
+    #     type=["csv"],
+    #     label_visibility="collapsed"
+    # )
 
-    if uploaded_file is not None:
-        tmp_path = "uploaded_dataset.csv"
-        with open(tmp_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+    # if uploaded_file is not None:
+    #     tmp_path = "uploaded_dataset.csv"
+    #     with open(tmp_path, "wb") as f:
+    #         f.write(uploaded_file.getbuffer())
 
-        if st.button("🚀 Mulai Pelatihan", use_container_width=True, type="primary"):
-            log_box   = st.empty()
-            progress  = st.progress(0)
-            steps     = ["Memuat dataset...", "Preprocessing...",
-                         "Membagi dataset...", "Melatih model...",
-                         "Evaluasi & simpan..."]
-            step_count = [0]
+    #     if st.button("🚀 Mulai Pelatihan", use_container_width=True, type="primary"):
+    #         log_box   = st.empty()
+    #         progress  = st.progress(0)
+    #         steps     = ["Memuat dataset...", "Preprocessing...",
+    #                      "Membagi dataset...", "Melatih model...",
+    #                      "Evaluasi & simpan..."]
+    #         step_count = [0]
 
-            def update_log(msg):
-                log_box.info(msg)
-                pct = min(step_count[0] / len(steps), 1.0)
-                progress.progress(pct)
-                step_count[0] += 1
+            # def update_log(msg):
+            #     log_box.info(msg)
+            #     pct = min(step_count[0] / len(steps), 1.0)
+            #     progress.progress(pct)
+            #     step_count[0] += 1
 
-            # ── Training — RerunException harus di-raise ulang ──
-            try:
-                with st.spinner("Proses pelatihan sedang berjalan, harap tunggu..."):
-                    metrics = train_model(tmp_path, progress_callback=update_log)
+            # # ── Training — RerunException harus di-raise ulang ──
+            # try:
+            #     with st.spinner("Proses pelatihan sedang berjalan, harap tunggu..."):
+            #         metrics = train_model(tmp_path, progress_callback=update_log)
 
-                st.session_state.model, st.session_state.metrics = load_model()
-                progress.progress(1.0)
-                log_box.empty()
-                st.success("✅ Model berhasil dilatih dan disimpan!")
+            #     st.session_state.model, st.session_state.metrics = load_model()
+            #     progress.progress(1.0)
+            #     log_box.empty()
+            #     st.success("✅ Model berhasil dilatih dan disimpan!")
 
-            except (RerunException, StopException):
-                # Exception internal Streamlit — wajib di-raise ulang
-                raise
+            # except (RerunException, StopException):
+            #     # Exception internal Streamlit — wajib di-raise ulang
+            #     raise
 
-            except Exception as e:
-                st.error(f"❌ Gagal melatih model:\n{e}")
+            # except Exception as e:
+            #     st.error(f"❌ Gagal melatih model:\n{e}")
 
     st.divider()
 
